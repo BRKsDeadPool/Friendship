@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use App\Interfaces\MigrationContract;
+use BRKsDeadPool\Friendship\Interfaces\MigrationContract;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 

@@ -75,11 +75,38 @@ class Friendship extends Model
     }
 
     /**
+     *  Fill the status
+     *
+     * @param $status string
+     * @return Friendship
+     */
+    public function fillSenderStatus($status)
+    {
+        return $this->fill([
+            'sender_status' => $status
+        ]);
+    }
+
+    /**
+     *  Fill the status
+     *
+     * @param $status string
+     * @return Friendship
+     */
+    public function fillRecipientStatus($status)
+    {
+        return $this->fill([
+            'recipient_status' => $status
+        ]);
+    }
+
+    /**
      *  return all records where sender equals to some model
      *
      * @return \Illuminate\Database\Eloquent\Builder;
      */
-    public function scopeWhereSender(Builder $query, Model $model) {
+    public function scopeWhereSender(Builder $query, Model $model)
+    {
         return $query->where('sender_id', $model->getKey())->where('sender_type', $model->getMorphClass());
     }
 
@@ -88,17 +115,19 @@ class Friendship extends Model
      *
      * @return \Illuminate\Database\Eloquent\Builder;
      */
-    public function scopeWhereRecipient(Builder $query, Model $model) {
+    public function scopeWhereRecipient(Builder $query, Model $model)
+    {
         return $query->where('recipient_id', $model->getKey())->where('recipient_type', $model->getMorphClass());
     }
 
-    public function scopeBetweenModels(Builder $query, $sender, $recipient) {
-        $query->where(function($queryIn) use ($sender, $recipient) {
-           $queryIn->where(function($q) use ($sender, $recipient) {
-              $q->whereSender($sender)->whereRecipient($recipient);
-           })->orWhere(function($q) use ($sender, $recipient) {
-               $q->whereSender($recipient)->whereRecipient($sender);
-           });
+    public function scopeBetweenModels(Builder $query, $sender, $recipient)
+    {
+        $query->where(function ($queryIn) use ($sender, $recipient) {
+            $queryIn->where(function ($q) use ($sender, $recipient) {
+                $q->whereSender($sender)->whereRecipient($recipient);
+            })->orWhere(function ($q) use ($sender, $recipient) {
+                $q->whereSender($recipient)->whereRecipient($sender);
+            });
         });
     }
 

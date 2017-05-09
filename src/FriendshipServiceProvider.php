@@ -3,7 +3,7 @@
 namespace BRKsDeadPool\Friendship;
 
 use Illuminate\Support\ServiceProvider;
-use App\Interfaces\ServiceProviderContract;
+use BRKsDeadPool\Friendship\Interfaces\ServiceProviderContract;
 
 class FriendshipServiceProvider extends ServiceProvider implements ServiceProviderContract
 {
