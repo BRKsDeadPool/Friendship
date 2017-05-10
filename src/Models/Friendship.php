@@ -2,21 +2,18 @@
 
 namespace BRKsDeadPool\Friendship\Models;
 
+use App\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Friendship extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
-        'recipient_id',
-        'sender_id',
-        'recipient_type',
-        'sender_type',
-        'recipient_status',
+        'sender',
         'sender_status',
+        'recipient',
+        'recipient_status',
     ];
 
     /**
@@ -25,25 +22,24 @@ class Friendship extends Model
      * @var array
      */
     protected $dates = [
-        'deleted_at',
         'created_at',
         'updated_at'
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function sender()
     {
-        return $this->morphTo('sender');
+        return $this->belongsTo(\App\User::class, 'sender');
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function recipient()
     {
-        return $this->morphTo('recipient');
+        return $this->belongsTo(\App\User::class, 'recipient');
     }
 
     /**
@@ -52,11 +48,10 @@ class Friendship extends Model
      * @param $recipient Model
      * @return Friendship
      */
-    public function fillRecipient(Model $recipient)
+    public function fillRecipient(User $user)
     {
         return $this->fill([
-            'recipient_id' => $recipient->getKey(),
-            'recipient_type' => $recipient->getMorphClass()
+            'recipient' => $user->getKey(),
         ]);
     }
 
@@ -101,26 +96,32 @@ class Friendship extends Model
     }
 
     /**
-     *  return all records where sender equals to some model
-     *
-     * @return \Illuminate\Database\Eloquent\Builder;
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $user \App\User;
+     * @return void;
      */
-    public function scopeWhereSender(Builder $query, Model $model)
+    public function scopeWhereSender(Builder $query, User $user)
     {
-        return $query->where('sender_id', $model->getKey())->where('sender_type', $model->getMorphClass());
+        $query->where('sender_id', $user->getKey());
     }
 
     /**
-     *  return all records where recipient equals to some model
-     *
-     * @return \Illuminate\Database\Eloquent\Builder;
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $user \App\User;
+     * @return void;
      */
-    public function scopeWhereRecipient(Builder $query, Model $model)
+    public function scopeWhereRecipient(Builder $query, User $user)
     {
-        return $query->where('recipient_id', $model->getKey())->where('recipient_type', $model->getMorphClass());
+        $query->where('recipient_id', $user->getKey());
     }
 
-    public function scopeBetweenModels(Builder $query, $sender, $recipient)
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $sender \App\User
+     * @param $recipient \App\User
+     * @return void
+     */
+    public function scopeBetweenModels(Builder $query, User $sender, User $recipient)
     {
         $query->where(function ($queryIn) use ($sender, $recipient) {
             $queryIn->where(function ($q) use ($sender, $recipient) {
@@ -131,5 +132,45 @@ class Friendship extends Model
         });
     }
 
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereStatus($query, $status)
+    {
+        $query->where('sender_status', $status)
+            ->where('recipient_status', $status);
+    }
 
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereStatusIn($query, $status)
+    {
+        $query->whereIn('sender_status', $status)
+            ->whereIn('recipient_status', $status);
+    }
+
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereSenderStatus($query, $status)
+    {
+        $query->where('sender_status', $status);
+    }
+
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereRecipientStatus($query, $status)
+    {
+        $query->where('recipient_status', $status);
+    }
 }

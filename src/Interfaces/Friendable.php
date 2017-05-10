@@ -2,47 +2,186 @@
 
 namespace BRKsDeadPool\Friendship\Interfaces;
 
+use BRKsDeadPool\Friendship\Models\Friendship;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 interface Friendable
 {
-    public function acceptFriend(); // Status::FRIEND
+    /**
+     * Send a friendship request
+     *
+     * @param $user
+     * @return bool
+     */
+    public function beFriend($user): bool;
 
-    public function denyFriend(); // Status::REJECTED
+    /**
+     *  Accept a friend and set status 'FRIEND'
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function acceptFriendship($user): Friendship;
 
-    public function unfriend(); // Status::STRANGER
+    /**
+     *  Cancel a friendship with some user
+     *
+     * @param $user \App\User
+     * @return bool
+     */
+    public function cancelFriendship($user): bool;
 
-    public function resetFriend(); // Status::STRANGER
+    /**
+     *  Block friend and set status as 'BLOCKED'
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function blockFriendship($user): Friendship;
 
-    public function blockFriend(); // Status::BLOCKED
+    /**
+     *  Unblock friend and set status as 'FRIEND'
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function unblockFriendship($user): Friendship;
 
-    public function unblockFriend(); // Status::PENDING
+    /**
+     *  Favorite a friend and set status as 'FAVORITE'
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function favoriteFriendship($user): Friendship;
 
-    public function favoriteFriend(); // Status::FAVORITE
+    /**
+     *  Unfavorite a friend and set status as 'FRIEND'
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function unfavoriteFriendship($user): Friendship;
 
-    public function unfavoriteFriend(); // Status::FRIEND
+    /**
+     *  Get mutual friends with a user
+     *
+     * @param $user \App\User
+     * @return array
+     */
+    public function getMutualFriends($user): array;
 
-    public function hasBlocked(); // check if user has blocked friend
+    /**
+     *  Get friends off friends
+     *
+     * @return array
+     */
+    public function getFriendsOfFriends(): array;
 
-    public function isBlockedBy(); // check if user is blocked by friend
+    /**
+     *  Get a friendship between users
+     *
+     * @param $user \App\User
+     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     */
+    public function getFriendship($user): Friendship;
 
-    public function hasPendingWith(); // Check if friend has a pending friendship with user
+    /**
+     *  Get all friends where status 'FRIEND'
+     *
+     * @param $status array|string
+     * @return array
+     */
+    public function getFriends($status): array;
 
-    public function isPendingWith(); // Check if there is a pending friendship with friend
+    /**
+     *  Get all friends however status
+     *
+     * @return array
+     */
+    public function getAllFriends(): array;
 
-    public function hasFavorited(); // Check if user has favorited a friend
+    /**
+     *  Get all pending requests
+     *
+     * @return array
+     */
+    public function getPendingRequests(): array;
 
-    public function isFavorited(); // Check if user is favorited by a friend
+    /**
+     *  Get all pending responses
+     *
+     * @return array
+     */
+    public function getPendingResponses(): array;
 
-    public function isStrangerWith(); // Check if there is a friendship between the users howerver the status
+    /**
+     *  Get all blocked frieends
+     *
+     * @return array
+     */
+    public function getBlockedFriends(): array;
 
-    public function getFriends(); // Get friends by status
+    /**
+     *  Get all favorite friends
+     *
+     * @return array
+     */
+    public function getFavoriteFriends(): array;
 
-    public function getAllFriends(); // Get all friends however status
+    /**
+     * Return all common friends
+     * @return array
+     */
+    public function getUnfavoriteFriends(): array;
 
-    public function getFriend(); // Get a friendship with user
+    /**
+     *  Check if user is friend of another user
+     * @param $user \App\User
+     * @return bool
+     */
+    public function isFriendOf($user): bool;
 
-    public function canBeFriend(); // Check if two users can be friends
+    /**
+     *  Check if there is a friendship between users
+     *
+     * @param $user \App\User
+     * @return bool
+     */
+    public function hasFriendshipWith($user): bool;
 
-    public function isSender(); // Check if user is sender from a friendship
+    /**
+     *  Check if user is blocked by another user
+     * @param $user \App\User
+     * @return bool
+     */
+    public function isBlockedBy($user): bool;
 
-    public function isRecipient(); // Check if user is a recipient from a friendship
+    /**
+     *  Check if user has blocked another user
+     * @param $user \App\User
+     * @return bool
+     */
+    public function hasBlocked($user): bool;
+
+    /**
+     * Check if user can be friend of another user
+     * @param $user \App\User
+     * @return boolean
+     */
+    public function canBeFriend($user): bool;
+
+    /**
+     * Friends where user is the sender relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function friends(): HasMany;
+
+    /**
+     * Friends where user is the recipient relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function friendsBis(): HasMany;
 }

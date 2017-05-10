@@ -11,12 +11,21 @@ class CreateFriendshipsTable extends Migration implements MigrationContract
     {
         Schema::create('friendships', function (Blueprint $table) {
             $table->increments('id');
-            $table->morphs('sender');
-            $table->morphs('recipient');
+            $table->integer('sender');
+            $table->integer('recipient');
             $table->integer('sender_status')->default(0);
             $table->integer('recipient_status')->default(0);
-            $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['sender', 'recipient']);
+            $table->foreign('sender')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+            $table->foreign('recipient')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
         });
     }
 
