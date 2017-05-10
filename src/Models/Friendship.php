@@ -102,7 +102,7 @@ class Friendship extends Model
      */
     public function scopeWhereSender(Builder $query, User $user)
     {
-        $query->where('sender_id', $user->getKey());
+        $query->where('sender', $user->getKey());
     }
 
     /**
@@ -112,7 +112,7 @@ class Friendship extends Model
      */
     public function scopeWhereRecipient(Builder $query, User $user)
     {
-        $query->where('recipient_id', $user->getKey());
+        $query->where('recipient', $user->getKey());
     }
 
     /**
@@ -172,5 +172,25 @@ class Friendship extends Model
     public function scopeWhereRecipientStatus($query, $status)
     {
         $query->where('recipient_status', $status);
+    }
+
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereSenderStatusIn($query, $status)
+    {
+        $query->whereIn('sender_status', $status);
+    }
+
+    /**
+     * @param $query \Illuminate\Database\Eloquent\Builder;
+     * @param $status string
+     * @return void
+     */
+    public function scopeWhereRecipientStatusIn($query, $status)
+    {
+        $query->whereIn('recipient_status', $status);
     }
 }

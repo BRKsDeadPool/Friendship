@@ -3,26 +3,39 @@
 namespace BRKsDeadPool\Friendship\Traits;
 
 use BRKsDeadPool\Friendship\Codes\Status;
+use BRKsDeadPool\Friendship\Exceptions\AlreadyFriendException;
+use BRKsDeadPool\Friendship\Exceptions\FriendshipException;
+use BRKsDeadPool\Friendship\Exceptions\FriendshipUnknow;
 use BRKsDeadPool\Friendship\Models\Friendship;
 use Illuminate\Database\Eloquent\Model;
-use BRKsDeadPool\Friendship\Interfaces\Friendable as TheContract;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 
 trait Friendable
 {
+    /*
+     |----------------------------------------------------------------------------
+     |  Public Methods
+     |----------------------------------------------------------------------------
+     |
+     | These methods were created to use on the app code, can be used by any User
+     | Model Instance
+     |
+    */
 
     /**
      * Send a friendship request
      *
      * @param $user
+     * @throws AlreadyFriendException
      * @return bool
      */
     public function beFriend($user): bool
     {
         // TODO: Implement beFriend() method.
         if (!$this->canBeFriend($user)) {
-            return false;
+            throw new AlreadyFriendException("", 0, null, $this, $user);
         }
 
         $friendship = (new Friendship)
@@ -40,11 +53,24 @@ trait Friendable
      *  Accept a friend and set status 'FRIEND'
      *
      * @param $user \App\User
-     * @return \BRKsDeadPool\Friendship\Models\Friendship
+     * @throws FriendshipUnknow
+     * @return \BRKsDeadPool\Friendship\Models\Friendship|bool
      */
-    public function acceptFriendship($user): Friendship
+    public function acceptFriendship($user)
     {
-        // TODO: Implement acceptFriendship() method.
+        if (!$friendship = $this->findFriendship($user)->first()) {
+            throw new FriendshipUnknow("", 0, null, $this, $user);
+        }
+
+        if (!$this->isRecipient($user, $friendship)) {
+            throw new FriendshipException("User with id: \"$this->id\" cannot accept friendship with user id: \"$user->id\" on friendship with id: \"$friendship->id\"");
+        }
+
+        if ($friendship->fillStatus(Status::FRIEND)
+            ->save()
+        ) return $friendship;
+
+        return false;
     }
 
     /**
@@ -205,18 +231,49 @@ trait Friendable
     }
 
     /**
+     *  Return general status between friends
+     * @param $user \App\User
+     * @return int
+     */
+    public function getGeneralStatus($user): int
+    {
+        if (!$friendship = $this->findFriendship($user)->first()) {
+            return Status::STRANGER;
+        }
+
+        ['sender_status' => $sender,
+            'recipient_status' => $recipient] = $friendship;
+
+        if ($recipient == Status::FRIEND && $sender == Status::FRIEND) return Status::FRIEND;
+        elseif ($recipient == Status::PENDING && $sender == Status::PENDING) return Status::PENDING;
+        elseif ($recipient == Status::FAVORITE && $sender == Status::FAVORITE) return Status::FAVORITE;
+        elseif ($recipient == Status::FRIEND && $sender == Status::FAVORITE ||
+            $recipient == Status::FAVORITE && $sender == Status::FRIEND) return Status::FRIEND;
+        elseif ($recipient == Status::BLOCKED || $sender == Status::BLOCKED) return Status::BLOCKED;
+
+        return Status::STRANGER;
+
+    }
+
+    /**
      *  Check if user is friend of another user
      * @param $user \App\User
      * @return bool
      */
     public function isFriendOf($user): bool
     {
-
+        // Todo implement isFriendOf() method
     }
 
+    /**
+     *  Check if there is a friendship between users
+     *
+     * @param $user \App\User
+     * @return bool
+     */
     public function hasFriendshipWith($user): bool
     {
-        return Friendship::betweenModels($this, $user)->exists();
+        return $this->findFriendship($user)->exists();
     }
 
     /**
@@ -271,5 +328,61 @@ trait Friendable
     public function friendsBis(): HasMany
     {
         return $this->hasMany(Friendship::class, 'recipient');
+    }
+
+
+    /*
+     |----------------------------------------------------------------------------
+     |  Private Methods
+     |----------------------------------------------------------------------------
+     |
+     | These methods were created just for use inside the package, should not be used
+     | on the app code.
+     |
+    */
+
+    /**
+     *  Search a friendship between users
+     *
+     * @param $user \Illuminate\Database\Eloquent\Model
+     * @return \BRKsDeadPool\Friendship\Models\Friendship|null
+     */
+    private function findFriendship(Model $user): Builder
+    {
+        return Friendship::betweenModels($this, $user);
+    }
+
+    /**
+     *  Check if user is recipient in friendship
+     *
+     * @param $user \App\User
+     * @param $friendship \BRKsDeadPool\Friendship\Models\Friendship|null
+     * @return boolean
+     */
+    private function isRecipient($user, $friendship = null)
+    {
+        if (!is_null($friendship)) {
+            return $friendship->recipient == $this->getKey();
+        }
+
+        return $this->findFriendship($user)
+            ->whereRecipient($this)->exists();
+    }
+
+    /**
+     *  Check if user is sender in friendship
+     *
+     * @param $user \App\User
+     * @param $friendship \BRKsDeadPool\Friendship\Models\Friendship|null
+     * @return boolean
+     */
+    private function isSender($user, $friendship = null)
+    {
+        if (!is_null($friendship)) {
+            return $friendship->sender == $this->getKey();
+        }
+
+        return $this->findFriendship($user)
+            ->whereSender($this)->exists();
     }
 }

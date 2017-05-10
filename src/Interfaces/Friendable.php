@@ -136,6 +136,13 @@ interface Friendable
     public function getUnfavoriteFriends(): array;
 
     /**
+     *  Return general status between friends
+     * @param $user \App\User
+     * @return int
+     */
+    public function getGeneralStatus($user): int;
+
+    /**
      *  Check if user is friend of another user
      * @param $user \App\User
      * @return bool
