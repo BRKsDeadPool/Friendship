@@ -3,6 +3,7 @@
 namespace BRKsDeadPool\Friendship\Exceptions;
 
 use BRKsDeadPool\Friendship\Exceptions\FriendshipException;
+use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 class FriendshipUnknow extends FriendshipException {

@@ -48,7 +48,7 @@ class Friendship extends Model
      * @param $recipient Model
      * @return Friendship
      */
-    public function fillRecipient(User $user)
+    public function fillRecipient(Model $user)
     {
         return $this->fill([
             'recipient' => $user->getKey(),
@@ -100,7 +100,7 @@ class Friendship extends Model
      * @param $user \App\User;
      * @return void;
      */
-    public function scopeWhereSender(Builder $query, User $user)
+    public function scopeWhereSender(Builder $query, Model $user)
     {
         $query->where('sender', $user->getKey());
     }
@@ -110,7 +110,7 @@ class Friendship extends Model
      * @param $user \App\User;
      * @return void;
      */
-    public function scopeWhereRecipient(Builder $query, User $user)
+    public function scopeWhereRecipient(Builder $query, Model $user)
     {
         $query->where('recipient', $user->getKey());
     }
@@ -121,7 +121,7 @@ class Friendship extends Model
      * @param $recipient \App\User
      * @return void
      */
-    public function scopeBetweenModels(Builder $query, User $sender, User $recipient)
+    public function scopeBetweenModels(Builder $query, Model $sender, Model $recipient)
     {
         $query->where(function ($queryIn) use ($sender, $recipient) {
             $queryIn->where(function ($q) use ($sender, $recipient) {
